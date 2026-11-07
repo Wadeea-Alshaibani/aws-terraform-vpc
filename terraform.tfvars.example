@@ -1,0 +1,8 @@
+# Copy to terraform.tfvars and edit.
+region      = "us-east-1"
+project     = "netops"
+environment = "dev"
+owner       = "your-name"
+
+# Tip: restrict the site to your own IP:  curl -s https://checkip.amazonaws.com
+allowed_cidrs = ["0.0.0.0/0"]

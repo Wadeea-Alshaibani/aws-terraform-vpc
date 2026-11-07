@@ -1,0 +1,35 @@
+#!/bin/bash
+# Boot script: install nginx and serve a page showing which instance and AZ
+# answered, so you can watch the ALB load-balance across Availability Zones.
+set -euxo pipefail
+
+dnf install -y nginx
+
+TOKEN=$(curl -sX PUT "http://169.254.169.254/latest/api/token" \
+  -H "X-aws-ec2-metadata-token-ttl-seconds: 300")
+meta() { curl -s -H "X-aws-ec2-metadata-token: $TOKEN" "http://169.254.169.254/latest/meta-data/$1"; }
+
+INSTANCE_ID=$(meta instance-id)
+AZ=$(meta placement/availability-zone)
+PRIVATE_IP=$(meta local-ipv4)
+
+cat > /usr/share/nginx/html/index.html <<HTML
+<!doctype html>
+<html><head><meta charset="utf-8"><title>${project}</title>
+<style>body{font-family:sans-serif;max-width:640px;margin:60px auto;padding:0 16px}
+td{padding:6px 12px;border-bottom:1px solid #ddd}</style></head>
+<body>
+<h1>${project}</h1>
+<p>Served from a private subnet, behind an Application Load Balancer.</p>
+<table>
+<tr><td>Instance</td><td>$INSTANCE_ID</td></tr>
+<tr><td>Availability Zone</td><td>$AZ</td></tr>
+<tr><td>Private IP</td><td>$PRIVATE_IP</td></tr>
+</table>
+<p>Refresh the page to see the load balancer switch between instances.</p>
+</body></html>
+HTML
+
+echo "ok" > /usr/share/nginx/html/health
+
+systemctl enable --now nginx

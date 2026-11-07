@@ -1,0 +1,6 @@
+# Copy to backend.hcl and set the bucket name printed by ./bootstrap
+bucket       = "tfstate-123456789012-us-east-1"
+key          = "aws-terraform-vpc/dev/terraform.tfstate"
+region       = "us-east-1"
+encrypt      = true
+use_lockfile = true
